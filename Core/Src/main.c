@@ -46,9 +46,11 @@ DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 v8 flag0 = 0;
+v8 flag_rgb = 0;
 u32 data_DMAadc[3] = {0,0,0};
 uch buffer[20];
 float temp_f;
@@ -61,6 +63,7 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -102,9 +105,11 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_Base_Start_IT(&htim4);
   HAL_ADC_Start_DMA(&hadc1, data_DMAadc, 3);
   LCD_init(1,1);
 
@@ -360,6 +365,51 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 39999;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 70;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -454,6 +504,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			case 4:
 				HAL_GPIO_TogglePin(led4_GPIO_Port, led4_Pin);
 				flag0 = 0;
+			 break;
+			default:
+				break;
+		}
+	}
+	if(htim->Instance == TIM4){
+		switch(flag_rgb){
+			case 0:
+				HAL_GPIO_TogglePin(rgb0_GPIO_Port, rgb0_Pin);
+				flag_rgb++;
+			 break;
+			case 1:
+				HAL_GPIO_TogglePin(rgb0_GPIO_Port, rgb0_Pin);
+				HAL_GPIO_TogglePin(rgb1_GPIO_Port, rgb1_Pin);
+				flag_rgb++;
+			 break;
+			case 2:
+				//HAL_GPIO_TogglePin(rgb1_GPIO_Port, rgb1_Pin);
+				HAL_GPIO_TogglePin(rgb0_GPIO_Port, rgb0_Pin);
+				flag_rgb++;
+			 break;
+			case 3:
+				HAL_GPIO_TogglePin(rgb1_GPIO_Port, rgb1_Pin);
+				HAL_GPIO_TogglePin(rgb0_GPIO_Port, rgb0_Pin);
+				flag_rgb = 0;
 			 break;
 			default:
 				break;
