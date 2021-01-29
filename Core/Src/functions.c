@@ -18,7 +18,6 @@ void tempADC(float *value, u32 adc_data){
 }
 
 float tempADC2(u32 adc_data){
-
 	return ((((3.3/4096)*adc_data)-1.43)/(4.3/1000.0)+25);
 }
 

@@ -93,6 +93,26 @@ void Error_Handler(void);
 #define LCD_DATA_6_GPIO_Port GPIOA
 #define LCD_DATA_7_Pin GPIO_PIN_9
 #define LCD_DATA_7_GPIO_Port GPIOA
+#define ledrow0_Pin GPIO_PIN_10
+#define ledrow0_GPIO_Port GPIOA
+#define ledrow1_Pin GPIO_PIN_11
+#define ledrow1_GPIO_Port GPIOA
+#define ledrow2_Pin GPIO_PIN_12
+#define ledrow2_GPIO_Port GPIOA
+#define ledrow3_Pin GPIO_PIN_15
+#define ledrow3_GPIO_Port GPIOA
+#define ledrow4_Pin GPIO_PIN_3
+#define ledrow4_GPIO_Port GPIOB
+#define ledrow5_Pin GPIO_PIN_4
+#define ledrow5_GPIO_Port GPIOB
+#define ledrow6_Pin GPIO_PIN_5
+#define ledrow6_GPIO_Port GPIOB
+#define ledrow7_Pin GPIO_PIN_6
+#define ledrow7_GPIO_Port GPIOB
+#define ledrow8_Pin GPIO_PIN_7
+#define ledrow8_GPIO_Port GPIOB
+#define ledrow9_Pin GPIO_PIN_8
+#define ledrow9_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

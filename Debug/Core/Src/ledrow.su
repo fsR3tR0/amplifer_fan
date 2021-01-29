@@ -1,0 +1,3 @@
+ledrow.c:9:6:ledrow_max	8	static
+ledrow.c:22:6:ledrow_half	8	static
+ledrow.c:35:6:ledrow_clear	8	static

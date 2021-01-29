@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
 #include "functions.h"
+#include "ledrow.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -111,7 +112,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim3);
   HAL_TIM_Base_Start_IT(&htim4);
   HAL_ADC_Start_DMA(&hadc1, data_DMAadc, 4);
-  LCD_init(1,1);
+  LCD_init(0,0);
 
   /* USER CODE END 2 */
 
@@ -124,6 +125,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  ledrow_max();
 	 // HAL_GPIO_TogglePin(led_panel_GPIO_Port, led_panel_Pin);
 	  /*
 	  LCD_goto(0,0);
@@ -179,6 +181,12 @@ int main(void)
 	  }
 
 	  HAL_Delay(500);
+	  //ledrow_clear();
+	  ledrow_half();
+	  HAL_Delay(500);
+	  ledrow_clear();
+	  HAL_Delay(500);
+
   }
   /* USER CODE END 3 */
 }
@@ -467,11 +475,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, rgb0_Pin|rgb1_Pin|led0_Pin|led1_Pin
-                          |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin, GPIO_PIN_RESET);
+                          |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin
+                          |ledrow0_Pin|ledrow1_Pin|ledrow2_Pin|ledrow3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, led4_Pin|LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin
-                          |LCD_DATA_5_Pin, GPIO_PIN_RESET);
+                          |LCD_DATA_5_Pin|ledrow4_Pin|ledrow5_Pin|ledrow6_Pin
+                          |ledrow7_Pin|ledrow8_Pin|ledrow9_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : led_panel_Pin */
   GPIO_InitStruct.Pin = led_panel_Pin;
@@ -481,18 +491,22 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(led_panel_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : rgb0_Pin rgb1_Pin led0_Pin led1_Pin
-                           led2_Pin led3_Pin LCD_DATA_6_Pin LCD_DATA_7_Pin */
+                           led2_Pin led3_Pin LCD_DATA_6_Pin LCD_DATA_7_Pin
+                           ledrow0_Pin ledrow1_Pin ledrow2_Pin ledrow3_Pin */
   GPIO_InitStruct.Pin = rgb0_Pin|rgb1_Pin|led0_Pin|led1_Pin
-                          |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin;
+                          |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin
+                          |ledrow0_Pin|ledrow1_Pin|ledrow2_Pin|ledrow3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : led4_Pin LCD_E_Pin LCD_RS_Pin LCD_DATA_4_Pin
-                           LCD_DATA_5_Pin */
+                           LCD_DATA_5_Pin ledrow4_Pin ledrow5_Pin ledrow6_Pin
+                           ledrow7_Pin ledrow8_Pin ledrow9_Pin */
   GPIO_InitStruct.Pin = led4_Pin|LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin
-                          |LCD_DATA_5_Pin;
+                          |LCD_DATA_5_Pin|ledrow4_Pin|ledrow5_Pin|ledrow6_Pin
+                          |ledrow7_Pin|ledrow8_Pin|ledrow9_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
