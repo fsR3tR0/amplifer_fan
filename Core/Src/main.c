@@ -51,7 +51,7 @@ TIM_HandleTypeDef htim4;
 /* USER CODE BEGIN PV */
 v8 flag0 = 0;
 v8 flag_rgb = 0;
-u32 data_DMAadc[3] = {0,0,0};
+u32 data_DMAadc[4] = {0,0,0,0};
 uch buffer[20];
 float temp_f;
 /* USER CODE END PV */
@@ -110,7 +110,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
   HAL_TIM_Base_Start_IT(&htim4);
-  HAL_ADC_Start_DMA(&hadc1, data_DMAadc, 3);
+  HAL_ADC_Start_DMA(&hadc1, data_DMAadc, 4);
   LCD_init(1,1);
 
   /* USER CODE END 2 */
@@ -156,6 +156,20 @@ int main(void)
 	  //tempADC(&temp_f, data_DMAadc[2]);
 	  //ftoa(temp_f, buffer, 2);
 	  temp_f = tempADC2(data_DMAadc[2]);
+	  ftoa(temp_f, buffer, 2);
+	  if(temp_f < 1.0){
+		  LCD_string("0");
+		  LCD_string(buffer);
+	  }else{
+		  LCD_string(buffer);
+	  }
+
+	  LCD_goto(1,8);
+	  //temp_f = ((3.3/4096)*data_DMAadc[3]);
+	  temp_f = (data_DMAadc[3]*330.0)/1023.0;
+	  	  //tempADC(&temp_f, data_DMAadc[2]);
+	  	  //ftoa(temp_f, buffer, 2);
+	  //temp_f = tempADC2(data_DMAadc[4]);
 	  ftoa(temp_f, buffer, 2);
 	  if(temp_f < 1.0){
 		  LCD_string("0");
@@ -238,7 +252,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 3;
+  hadc1.Init.NbrOfConversion = 4;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -264,6 +278,14 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
   sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -445,11 +467,11 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, rgb0_Pin|rgb1_Pin|led0_Pin|led1_Pin
-                          |led2_Pin|led3_Pin|led4_Pin|LCD_DATA_6_Pin
-                          |LCD_DATA_7_Pin, GPIO_PIN_RESET);
+                          |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin|LCD_DATA_5_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, led4_Pin|LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin
+                          |LCD_DATA_5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : led_panel_Pin */
   GPIO_InitStruct.Pin = led_panel_Pin;
@@ -459,18 +481,18 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(led_panel_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : rgb0_Pin rgb1_Pin led0_Pin led1_Pin
-                           led2_Pin led3_Pin led4_Pin LCD_DATA_6_Pin
-                           LCD_DATA_7_Pin */
+                           led2_Pin led3_Pin LCD_DATA_6_Pin LCD_DATA_7_Pin */
   GPIO_InitStruct.Pin = rgb0_Pin|rgb1_Pin|led0_Pin|led1_Pin
-                          |led2_Pin|led3_Pin|led4_Pin|LCD_DATA_6_Pin
-                          |LCD_DATA_7_Pin;
+                          |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LCD_E_Pin LCD_RS_Pin LCD_DATA_4_Pin LCD_DATA_5_Pin */
-  GPIO_InitStruct.Pin = LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin|LCD_DATA_5_Pin;
+  /*Configure GPIO pins : led4_Pin LCD_E_Pin LCD_RS_Pin LCD_DATA_4_Pin
+                           LCD_DATA_5_Pin */
+  GPIO_InitStruct.Pin = led4_Pin|LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin
+                          |LCD_DATA_5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -482,7 +504,7 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim-> Instance == TIM2){
 		HAL_GPIO_TogglePin(led_panel_GPIO_Port, led_panel_Pin);
-	}
+	}/*
 	if(htim-> Instance == TIM3){
 		switch(flag0){
 			case 0:
@@ -533,7 +555,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			default:
 				break;
 		}
-	}
+	}*/
 }
 /* USER CODE END 4 */
 
