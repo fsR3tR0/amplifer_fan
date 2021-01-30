@@ -45,6 +45,7 @@
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
@@ -55,6 +56,8 @@ v8 flag_rgb = 0;
 u32 data_DMAadc[4] = {0,0,0,0};
 uch buffer[20];
 float temp_f;
+float lm35 = 0.0;
+float tmp_adc = 0.0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,6 +68,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -107,7 +111,9 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
   HAL_TIM_Base_Start_IT(&htim4);
@@ -119,13 +125,14 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   LCD_test();
-
+  //__HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,149);
+  __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,148);
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  ledrow_max();
+	  //ledrow_max();
 	 // HAL_GPIO_TogglePin(led_panel_GPIO_Port, led_panel_Pin);
 	  /*
 	  LCD_goto(0,0);
@@ -144,9 +151,9 @@ int main(void)
 	  }
 
 	  LCD_goto(1,0);
-	  temp_f = ((3.3/4096)*data_DMAadc[1]);
-	  ftoa(temp_f, buffer, 2);
-	  if(temp_f < 1.0){
+	  tmp_adc = ((3.3/4096)*data_DMAadc[1]);
+	  ftoa(tmp_adc, buffer, 2);
+	  if(tmp_adc < 1.0){
 		  LCD_string("0");
 		  LCD_string(buffer);
 	  }else{
@@ -168,23 +175,23 @@ int main(void)
 
 	  LCD_goto(1,8);
 	  //temp_f = ((3.3/4096)*data_DMAadc[3]);
-	  temp_f = (data_DMAadc[3]*330.0)/1023.0;
+	  lm35 = ((data_DMAadc[3]*3.3)/4096)*180;
 	  	  //tempADC(&temp_f, data_DMAadc[2]);
 	  	  //ftoa(temp_f, buffer, 2);
 	  //temp_f = tempADC2(data_DMAadc[4]);
-	  ftoa(temp_f, buffer, 2);
-	  if(temp_f < 1.0){
+	  ftoa(lm35, buffer, 2);
+	  if(lm35 < 1.0){
 		  LCD_string("0");
 		  LCD_string(buffer);
 	  }else{
 		  LCD_string(buffer);
 	  }
-
+	  /*
 	  HAL_Delay(500);
 	  //ledrow_clear();
 	  ledrow_half();
 	  HAL_Delay(500);
-	  ledrow_clear();
+	  ledrow_clear();*/
 	  HAL_Delay(500);
 
   }
@@ -301,6 +308,81 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 300;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 150;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+  HAL_TIM_MspPostInit(&htim1);
 
 }
 
@@ -476,12 +558,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, rgb0_Pin|rgb1_Pin|led0_Pin|led1_Pin
                           |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin
-                          |ledrow0_Pin|ledrow1_Pin|ledrow2_Pin|ledrow3_Pin, GPIO_PIN_RESET);
+                          |ledrow1_Pin|ledrow2_Pin|ledrow3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, led4_Pin|LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin
-                          |LCD_DATA_5_Pin|ledrow4_Pin|ledrow5_Pin|ledrow6_Pin
-                          |ledrow7_Pin|ledrow8_Pin|ledrow9_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, led4_Pin|ledrow0_Pin|LCD_E_Pin|LCD_RS_Pin
+                          |LCD_DATA_4_Pin|LCD_DATA_5_Pin|ledrow4_Pin|ledrow5_Pin
+                          |ledrow6_Pin|ledrow7_Pin|ledrow8_Pin|ledrow9_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : led_panel_Pin */
   GPIO_InitStruct.Pin = led_panel_Pin;
@@ -492,21 +574,21 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : rgb0_Pin rgb1_Pin led0_Pin led1_Pin
                            led2_Pin led3_Pin LCD_DATA_6_Pin LCD_DATA_7_Pin
-                           ledrow0_Pin ledrow1_Pin ledrow2_Pin ledrow3_Pin */
+                           ledrow1_Pin ledrow2_Pin ledrow3_Pin */
   GPIO_InitStruct.Pin = rgb0_Pin|rgb1_Pin|led0_Pin|led1_Pin
                           |led2_Pin|led3_Pin|LCD_DATA_6_Pin|LCD_DATA_7_Pin
-                          |ledrow0_Pin|ledrow1_Pin|ledrow2_Pin|ledrow3_Pin;
+                          |ledrow1_Pin|ledrow2_Pin|ledrow3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : led4_Pin LCD_E_Pin LCD_RS_Pin LCD_DATA_4_Pin
-                           LCD_DATA_5_Pin ledrow4_Pin ledrow5_Pin ledrow6_Pin
-                           ledrow7_Pin ledrow8_Pin ledrow9_Pin */
-  GPIO_InitStruct.Pin = led4_Pin|LCD_E_Pin|LCD_RS_Pin|LCD_DATA_4_Pin
-                          |LCD_DATA_5_Pin|ledrow4_Pin|ledrow5_Pin|ledrow6_Pin
-                          |ledrow7_Pin|ledrow8_Pin|ledrow9_Pin;
+  /*Configure GPIO pins : led4_Pin ledrow0_Pin LCD_E_Pin LCD_RS_Pin
+                           LCD_DATA_4_Pin LCD_DATA_5_Pin ledrow4_Pin ledrow5_Pin
+                           ledrow6_Pin ledrow7_Pin ledrow8_Pin ledrow9_Pin */
+  GPIO_InitStruct.Pin = led4_Pin|ledrow0_Pin|LCD_E_Pin|LCD_RS_Pin
+                          |LCD_DATA_4_Pin|LCD_DATA_5_Pin|ledrow4_Pin|ledrow5_Pin
+                          |ledrow6_Pin|ledrow7_Pin|ledrow8_Pin|ledrow9_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -517,8 +599,64 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim-> Instance == TIM2){
-		HAL_GPIO_TogglePin(led_panel_GPIO_Port, led_panel_Pin);
-	}/*
+			HAL_GPIO_TogglePin(led_panel_GPIO_Port, led_panel_Pin);
+		}
+	if(htim-> Instance == TIM3){
+		if(tmp_adc < 1.0){
+			ledrow1();
+		}else if(tmp_adc > 3.0){
+			ledrow8();
+		}else if(2.0 < tmp_adc && tmp_adc < 2.9 ){
+			ledrow_half();
+		}
+		/*switch(flag0){
+			case 0:
+				ledrow0();
+				flag0++;
+			 break;
+			case 1:
+				ledrow1();
+				flag0++;
+			 break;
+			case 2:
+				ledrow2();
+				flag0++;
+			 break;
+			case 3:
+				ledrow3();
+				flag0++;
+			 break;
+			case 4:
+				ledrow4();
+				flag0++;
+			 break;
+			case 5:
+				ledrow5();
+				flag0++;
+			 break;
+			case 6:
+				ledrow6();
+				flag0++;
+			 break;
+			case 7:
+				ledrow7();
+				flag0++;
+			 break;
+			case 8:
+				ledrow8();
+				flag0++;
+			 break;
+			case 9:
+				ledrow_max();
+				flag0 = 0;
+			 break;
+			default:
+				break;
+			}
+			*/
+
+	}
+	/*
 	if(htim-> Instance == TIM3){
 		switch(flag0){
 			case 0:

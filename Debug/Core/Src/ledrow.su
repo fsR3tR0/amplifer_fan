@@ -1,3 +1,12 @@
 ledrow.c:9:6:ledrow_max	8	static
 ledrow.c:22:6:ledrow_half	8	static
 ledrow.c:35:6:ledrow_clear	8	static
+ledrow.c:48:6:ledrow0	8	static
+ledrow.c:61:6:ledrow1	8	static
+ledrow.c:74:6:ledrow2	8	static
+ledrow.c:87:6:ledrow3	8	static
+ledrow.c:100:6:ledrow4	8	static
+ledrow.c:113:6:ledrow5	8	static
+ledrow.c:126:6:ledrow6	8	static
+ledrow.c:139:6:ledrow7	8	static
+ledrow.c:152:6:ledrow8	8	static
