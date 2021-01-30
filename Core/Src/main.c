@@ -55,6 +55,7 @@ v8 flag0 = 0;
 v8 flag_rgb = 0;
 u32 data_DMAadc[4] = {0,0,0,0};
 uch buffer[20];
+bool flag_btn = 0;
 float temp_f;
 float lm35 = 0.0;
 float tmp_adc = 0.0;
@@ -192,6 +193,13 @@ int main(void)
 	  ledrow_half();
 	  HAL_Delay(500);
 	  ledrow_clear();*/
+	  if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && !flag_btn){
+		  HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, SET);
+		  flag_btn = 1;
+	  }else if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && flag_btn){
+		  HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, RESET);
+		  flag_btn = 0;
+	  }
 	  HAL_Delay(500);
 
   }
@@ -334,7 +342,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 300;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 150;
+  htim1.Init.Period = 250;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -593,6 +601,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : in_btn_Pin */
+  GPIO_InitStruct.Pin = in_btn_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(in_btn_GPIO_Port, &GPIO_InitStruct);
 
 }
 

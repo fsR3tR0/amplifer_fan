@@ -115,6 +115,8 @@ void Error_Handler(void);
 #define ledrow8_GPIO_Port GPIOB
 #define ledrow9_Pin GPIO_PIN_8
 #define ledrow9_GPIO_Port GPIOB
+#define in_btn_Pin GPIO_PIN_9
+#define in_btn_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
