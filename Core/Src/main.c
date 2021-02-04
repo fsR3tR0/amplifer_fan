@@ -55,7 +55,7 @@ v8 flag0 = 0;
 v8 flag_rgb = 0;
 u32 data_DMAadc[4] = {0,0,0,0};
 uch buffer[20];
-bool flag_btn = 0;
+bool flag_btn = 0, flag_btn_1 = 0;
 float temp_f;
 float lm35 = 0.0;
 float tmp_adc = 0.0;
@@ -127,7 +127,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   LCD_test();
   //__HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,149);
-  __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,148);
+  __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,245);
   while (1)
   {
     /* USER CODE END WHILE */
@@ -165,7 +165,7 @@ int main(void)
 	  //temp_f = ((3.3/4096)*data_DMAadc[1]);
 	  //tempADC(&temp_f, data_DMAadc[2]);
 	  //ftoa(temp_f, buffer, 2);
-	  temp_f = tempADC2(data_DMAadc[2]);
+	  temp_f = ((data_DMAadc[3]*3.3)/4096);//tempADC2(data_DMAadc[2]);
 	  ftoa(temp_f, buffer, 2);
 	  if(temp_f < 1.0){
 		  LCD_string("0");
@@ -176,7 +176,7 @@ int main(void)
 
 	  LCD_goto(1,8);
 	  //temp_f = ((3.3/4096)*data_DMAadc[3]);
-	  lm35 = ((data_DMAadc[3]*3.3)/4096)*180;
+	  lm35 = ((data_DMAadc[3]*3.3)/4096)*100;
 	  	  //tempADC(&temp_f, data_DMAadc[2]);
 	  	  //ftoa(temp_f, buffer, 2);
 	  //temp_f = tempADC2(data_DMAadc[4]);
@@ -193,13 +193,15 @@ int main(void)
 	  ledrow_half();
 	  HAL_Delay(500);
 	  ledrow_clear();*/
-	  if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && !flag_btn){
+	  /*if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && !flag_btn){
 		  HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, SET);
 		  flag_btn = 1;
+		  __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,250);
 	  }else if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && flag_btn){
 		  HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, RESET);
 		  flag_btn = 0;
-	  }
+		  __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,245);
+	  }*/
 	  HAL_Delay(500);
 
   }
@@ -505,7 +507,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 39999;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 70;
+  htim4.Init.Period = 69;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
@@ -696,9 +698,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			default:
 				break;
 		}
-	}
+	}*/
 	if(htim->Instance == TIM4){
-		switch(flag_rgb){
+		switch(flag_btn_1){
+			case 0:
+				if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && !flag_btn){
+					HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, SET);
+					flag_btn = 1;
+					flag_btn_1 = 1;
+					__HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,250);
+				}else if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 0 && flag_btn){
+					//HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, RESET);
+					flag_btn = 0;
+				}
+			 break;
+			case 1:
+				if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 1 && !flag_btn){
+					HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, RESET);
+					flag_btn = 1;
+					flag_btn_1 = 0;
+					__HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_3,245);
+				}else if(HAL_GPIO_ReadPin(in_btn_GPIO_Port, in_btn_Pin) == 0 && flag_btn){
+					//HAL_GPIO_WritePin(led0_GPIO_Port, led0_Pin, RESET);
+					flag_btn = 0;
+				}
+			 break;
+
+		}
+
+
+
+		/*switch(flag_rgb){
 			case 0:
 				HAL_GPIO_TogglePin(rgb0_GPIO_Port, rgb0_Pin);
 				flag_rgb++;
@@ -720,8 +750,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			 break;
 			default:
 				break;
-		}
-	}*/
+		}*/
+	}
 }
 /* USER CODE END 4 */
 
