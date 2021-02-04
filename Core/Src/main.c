@@ -618,13 +618,36 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			HAL_GPIO_TogglePin(led_panel_GPIO_Port, led_panel_Pin);
 		}
 	if(htim-> Instance == TIM3){
-		if(tmp_adc < 1.0){
+		/*if(tmp_adc < 1.0){
 			ledrow1();
 		}else if(tmp_adc > 3.0){
 			ledrow8();
 		}else if(2.0 < tmp_adc && tmp_adc < 2.9 ){
 			ledrow_half();
+		}*/
+		if(lm35 <= 4.0){
+			ledrow0();
+		}else if(4.0 < lm35 && lm35 <= 8.0){
+			ledrow1();
+		}else if(8.0 < lm35 && lm35 <= 12.0){
+			ledrow2();
+		}else if(12.0 < lm35 && lm35 <= 16.0){
+			ledrow3();
+		}else if(20.0 < lm35 && lm35 <= 24.0){
+			ledrow4();
+		}else if(24.0 < lm35 && lm35 <= 28.0){
+			ledrow5();
+		}else if(28.0 < lm35 && lm35 <= 32.0){
+			ledrow6();
+		}else if(32.0 < lm35 && lm35 <= 36.0){
+			ledrow7();
+		}else if(36.0 < lm35 && lm35 <= 40.0){
+			ledrow8();
+		}else if( 41.0 < lm35){
+			ledrow_max();
 		}
+
+
 		/*switch(flag0){
 			case 0:
 				ledrow0();
